@@ -1,6 +1,7 @@
 package com.supdevinci.caisson.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -104,7 +105,10 @@ fun ProfileScreen(navController: NavController, viewModel: CocktailViewModel) {
             }
             // Stat 2
             Card(
-                modifier = Modifier.weight(1f).height(120.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(120.dp)
+                    .clickable { navController.navigate("leaderboard") },
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFD1FAE5)), // Light Emerald variant
                 shape = RoundedCornerShape(24.dp),
                 elevation = CardDefaults.cardElevation(0.dp)
