@@ -60,7 +60,7 @@ fun CaissonApp(viewModel: CocktailViewModel) {
             popExitTransition = { slideOutHorizontally(tween(400)) { it } + fadeOut(tween(400)) }
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen(navController, viewModel) }
-            composable(BottomNavItem.BacCalculator.route) { com.supdevinci.caisson.ui.screens.BacCalculatorScreen(navController, viewModel) }
+            composable(BottomNavItem.Leaderboard.route) { LeaderboardScreen(navController) }
             composable(BottomNavItem.QuickAdd.route) { QuickAddScreen(navController, viewModel, snackbarHostState) }
             composable(BottomNavItem.Profile.route) { ProfileScreen(navController, viewModel) }
             composable("analytics") { com.supdevinci.caisson.ui.screens.AnalyticsScreen(navController) }
@@ -78,7 +78,7 @@ fun CaissonApp(viewModel: CocktailViewModel) {
 fun FloatingBottomBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Home,
-        BottomNavItem.BacCalculator,
+        BottomNavItem.Leaderboard,
         BottomNavItem.QuickAdd,
         BottomNavItem.Profile
     )

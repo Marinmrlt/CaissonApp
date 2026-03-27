@@ -1,46 +1,52 @@
 package com.supdevinci.caisson
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.supdevinci.caisson.ui.CaissonApp
-import com.supdevinci.caisson.ui.theme.CaissonTheme
-
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.supdevinci.caisson.utils.BiometricHelper
-import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.fragment.app.FragmentActivity
+import com.supdevinci.caisson.ui.CaissonApp
+import com.supdevinci.caisson.ui.screens.LoadingSplashScreen
+import com.supdevinci.caisson.ui.theme.CaissonTheme
+import com.supdevinci.caisson.utils.BiometricHelper
 import com.supdevinci.caisson.viewmodel.CocktailViewModel
 
 class MainActivity : FragmentActivity() {
     private val viewModel: CocktailViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-        
-        // Keep splash screen visible until the ViewModel finishes the Room API bulk sync!
-        splashScreen.setKeepOnScreenCondition {
-            !viewModel.isReady.value
-        }
 
         enableEdgeToEdge()
         setContent {
+            val isReady by viewModel.isReady.collectAsState()
             val userProfile by viewModel.userProfile.collectAsState()
             var isUnlocked by remember { mutableStateOf(false) }
             var authAttempted by remember { mutableStateOf(false) }
 
             CaissonTheme {
-                if (userProfile.isBiometricEnabled) {
+                if (!isReady) {
+                    LoadingSplashScreen()
+                } else if (userProfile.isBiometricEnabled) {
                     if (isUnlocked) {
                         CaissonApp(viewModel)
                     } else {
