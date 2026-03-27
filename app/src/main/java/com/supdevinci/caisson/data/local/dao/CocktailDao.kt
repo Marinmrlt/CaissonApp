@@ -28,4 +28,17 @@ interface CocktailDao {
     
     @Query("SELECT * FROM cocktails WHERE id = :id LIMIT 1")
     fun getCocktailByIdFlow(id: String): Flow<CocktailEntity?>
+
+    // --- Drink Logs Analytics ---
+    @Insert
+    suspend fun insertDrinkLog(log: com.supdevinci.caisson.data.local.entities.DrinkLogEntity)
+
+    @Query("SELECT * FROM drink_logs WHERE timestamp >= :since ORDER BY timestamp DESC")
+    fun getDrinkLogsSince(since: Long): Flow<List<com.supdevinci.caisson.data.local.entities.DrinkLogEntity>>
+
+    @Query("DELETE FROM cocktails")
+    suspend fun clearAllCocktails()
+
+    @Query("DELETE FROM drink_logs")
+    suspend fun clearAllDrinkLogs()
 }

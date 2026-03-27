@@ -29,6 +29,7 @@ class CocktailRepository(private val dao: CocktailDao) {
                             CocktailEntity(
                                 id = apiCocktail.id ?: "",
                                 name = apiCocktail.name ?: "Unknown",
+                                category = apiCocktail.category ?: "Unknown",
                                 instructions = apiCocktail.instructions ?: "",
                                 imageUrl = apiCocktail.imageUrl,
                                 ingredients = apiCocktail.toIngredientList(),
@@ -55,5 +56,16 @@ class CocktailRepository(private val dao: CocktailDao) {
         if (cocktail != null) {
             dao.update(cocktail.copy(isFavorite = isFavorite))
         }
+    }
+
+    suspend fun insertDrinkLog(log: com.supdevinci.caisson.data.local.entities.DrinkLogEntity) {
+        dao.insertDrinkLog(log)
+    }
+
+    fun getDrinkLogsSince(since: Long) = dao.getDrinkLogsSince(since)
+
+    suspend fun clearAllHistory() {
+        dao.clearAllDrinkLogs()
+        dao.clearAllCocktails()
     }
 }

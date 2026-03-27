@@ -3,93 +3,88 @@ package com.supdevinci.caisson.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeaderboardScreen(navController: NavController) {
+    var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("World", "National", "Regional")
-    var selectedTab by remember { mutableStateOf("World") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA)) // Very light gray/off-white background
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color(0xFFF8F9FA))
+            .padding(24.dp)
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Leaderboard",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF0F172A)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Top drinkers around the globe",
-            fontSize = 14.sp,
-            color = Color.Gray
-        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.EmojiEvents, contentDescription = "Trophy", tint = Color(0xFFFF6D00), modifier = Modifier.size(32.dp))
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                "Leaderboard",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF0F172A)
+            )
+        }
+        Text("Top mixologists around the globe", color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+        
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Segmented Control
+        // Custom Floating Segmented Tab rows
         Surface(
-            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.fillMaxWidth().height(56.dp).shadow(8.dp, RoundedCornerShape(28.dp)),
             color = Color.White,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
-            shadowElevation = 1.dp
+            shape = RoundedCornerShape(28.dp)
         ) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                tabs.forEach { tab ->
-                    val isSelected = selectedTab == tab
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(if (isSelected) Color(0xFFFF6D00) else Color.Transparent)
-                            .padding(horizontal = 16.dp),
-                        contentAlignment = Alignment.Center
+            Row(modifier = Modifier.fillMaxSize().padding(4.dp)) {
+                tabs.forEachIndexed { index, title ->
+                    val isSelected = selectedTab == index
+                    Button(
+                        onClick = { selectedTab = index },
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isSelected) Color(0xFF0F172A) else Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = ButtonDefaults.buttonElevation(0.dp)
                     ) {
-                        TextButton(onClick = { selectedTab = tab }) {
-                            Text(
-                                text = tab,
-                                color = if (isSelected) Color.White else Color(0xFF475569),
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
+                        if(index == 0) Icon(Icons.Filled.Public, contentDescription = "World", modifier = Modifier.size(16.dp), tint = if (isSelected) Color.White else Color.Gray)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = title,
+                            color = if (isSelected) Color.White else Color.Gray,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Leaderboard List
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(MockData.users) { user ->
-                LeaderboardCard(user = user)
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            items(10) { index ->
+                val rank = index + 1
+                LeaderboardRankCard(rank = rank, tabIndex = selectedTab)
+                Spacer(modifier = Modifier.height(16.dp))
             }
             item { Spacer(modifier = Modifier.height(100.dp)) }
         }
@@ -97,64 +92,77 @@ fun LeaderboardScreen(navController: NavController) {
 }
 
 @Composable
-fun LeaderboardCard(user: LeaderboardUser) {
-    val cardColor = when (user.rank) {
-        1 -> Color(0xFFFFF9C4) // Gold tint
-        2 -> Color(0xFFF5F5F5) // Silver tone
-        3 -> Color(0xFFFFE0B2) // Bronze tint
-        else -> Color.White
-    }
-    
-    val iconColor = when (user.rank) {
-        1 -> Color(0xFFFFC107) // Gold
-        2 -> Color(0xFF9E9E9E) // Silver
-        3 -> Color(0xFFFF5722) // Bronze
-        else -> Color.Transparent
+fun LeaderboardRankCard(rank: Int, tabIndex: Int) {
+    val (bgColor, textColor, badgeColor) = when (rank) {
+        1 -> Triple(Color(0xFFFEF9C3), Color(0xFF854D0E), Color(0xFFEAB308)) // Gold
+        2 -> Triple(Color(0xFFF1F5F9), Color(0xFF334155), Color(0xFF94A3B8)) // Silver
+        3 -> Triple(Color(0xFFFFEDD5), Color(0xFF9A3412), Color(0xFFF97316)) // Bronze
+        else -> Triple(Color.White, Color.Black, Color(0xFFE2E8F0)) // Normal
     }
 
+    val elevation = if(rank <= 3) 12.dp else 2.dp
+    
+    // Dynamic mock names depending on the selected tab
+    val leaderName = when(tabIndex) {
+        0 -> if(rank == 1) "Alex Mercer" else "World User $rank"
+        1 -> if(rank == 1) "Sarah Jenkins" else "National User $rank"
+        else -> if(rank == 1) "Local Legend" else "Regional User $rank"
+    }
+    
+    // Dynamic mock points depending on tab
+    val basePoints = when(tabIndex) {
+        0 -> 10000
+        1 -> 5000
+        else -> 1000
+    }
+    val points = basePoints - (rank * (basePoints / 20))
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = cardColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = if(user.rank <= 3) 2.dp else 1.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(88.dp)
+            .shadow(elevation, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        shape = RoundedCornerShape(20.dp)
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Rank Icon or Text
-            Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
-                if (user.rank <= 3) {
-                    Icon(Icons.Filled.EmojiEvents, contentDescription = "Rank", tint = iconColor)
-                } else {
-                    Text("${user.rank}", color = Color.Gray, fontWeight = FontWeight.Bold)
+            // Rank Badge
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                color = badgeColor.copy(alpha=0.2f)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "#$rank",
+                        fontWeight = FontWeight.Black,
+                        color = badgeColor,
+                        fontSize = 18.sp
+                    )
                 }
             }
+            
             Spacer(modifier = Modifier.width(16.dp))
             
-            // Avatar
-            AsyncImage(
-                model = "https://i.pravatar.cc/150?u=${user.id}",
-                contentDescription = "Avatar",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            // Info
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = user.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(text = user.location, color = Color.Gray, fontSize = 12.sp)
+                Text(
+                    text = leaderName,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = textColor
+                )
+                Text(
+                    text = "$points Points",
+                    color = textColor.copy(alpha=0.7f),
+                    fontSize = 14.sp
+                )
             }
             
-            // Score
-            Column(horizontalAlignment = Alignment.End) {
-                Text(text = "${user.drinks}", fontWeight = FontWeight.Light, fontSize = 20.sp)
-                Text(text = "drinks", color = Color.Gray, fontSize = 12.sp)
+            if (rank <= 3) {
+                Icon(Icons.Filled.EmojiEvents, contentDescription="Trophy", tint=badgeColor, modifier=Modifier.size(24.dp))
             }
         }
     }

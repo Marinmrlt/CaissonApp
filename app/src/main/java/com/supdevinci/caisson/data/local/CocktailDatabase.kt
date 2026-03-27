@@ -7,8 +7,9 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.supdevinci.caisson.data.local.dao.CocktailDao
 import com.supdevinci.caisson.data.local.entities.CocktailEntity
+import com.supdevinci.caisson.data.local.entities.DrinkLogEntity
 
-@Database(entities = [CocktailEntity::class], version = 1, exportSchema = false)
+@Database(entities = [CocktailEntity::class, DrinkLogEntity::class], version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class CocktailDatabase : RoomDatabase() {
     abstract fun cocktailDao(): CocktailDao

@@ -10,6 +10,7 @@ data class CocktailResponse(
 data class Cocktail(
     @SerializedName("idDrink") val id: String?,
     @SerializedName("strDrink") val name: String?,
+    @SerializedName("strCategory") val category: String?,
     @SerializedName("strDrinkThumb") val imageUrl: String?,
     @SerializedName("strInstructions") val instructions: String?,
     

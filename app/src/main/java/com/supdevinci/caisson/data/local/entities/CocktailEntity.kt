@@ -10,6 +10,7 @@ data class CocktailEntity(
     @PrimaryKey
     val id: String,
     val name: String,
+    val category: String = "Unknown",
     val instructions: String,
     val imageUrl: String? = null,
     val ingredients: List<IngredientMeasure> = emptyList(),

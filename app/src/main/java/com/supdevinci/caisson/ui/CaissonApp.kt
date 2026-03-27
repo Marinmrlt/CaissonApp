@@ -27,6 +27,11 @@ import com.supdevinci.caisson.ui.screens.LeaderboardScreen
 import com.supdevinci.caisson.ui.screens.ProfileScreen
 import com.supdevinci.caisson.ui.screens.QuickAddScreen
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import com.supdevinci.caisson.viewmodel.CocktailViewModel
 import com.supdevinci.caisson.ui.screens.CocktailDetailScreen
 import com.supdevinci.caisson.ui.screens.EditProfileScreen
@@ -34,29 +39,37 @@ import com.supdevinci.caisson.ui.screens.EditProfileScreen
 @Composable
 fun CaissonApp(viewModel: CocktailViewModel) {
     val navController = rememberNavController()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         bottomBar = {
             FloatingBottomBar(navController = navController)
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         },
         containerColor = Color(0xFFF8F9FA) 
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = BottomNavItem.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = { slideInHorizontally(tween(400)) { it } + fadeIn(tween(400)) },
+            exitTransition = { slideOutHorizontally(tween(400)) { -it / 3 } + fadeOut(tween(400)) },
+            popEnterTransition = { slideInHorizontally(tween(400)) { -it / 3 } + fadeIn(tween(400)) },
+            popExitTransition = { slideOutHorizontally(tween(400)) { it } + fadeOut(tween(400)) }
         ) {
             composable(BottomNavItem.Home.route) { HomeScreen(navController, viewModel) }
-            composable(BottomNavItem.Leaderboard.route) { LeaderboardScreen(navController) }
-            composable(BottomNavItem.QuickAdd.route) { QuickAddScreen(navController, viewModel) }
+            composable(BottomNavItem.BacCalculator.route) { com.supdevinci.caisson.ui.screens.BacCalculatorScreen(navController, viewModel) }
+            composable(BottomNavItem.QuickAdd.route) { QuickAddScreen(navController, viewModel, snackbarHostState) }
             composable(BottomNavItem.Profile.route) { ProfileScreen(navController, viewModel) }
             composable("analytics") { com.supdevinci.caisson.ui.screens.AnalyticsScreen(navController) }
-            composable("settings") { com.supdevinci.caisson.ui.screens.SettingsScreen(navController) }
+            composable("settings") { com.supdevinci.caisson.ui.screens.SettingsScreen(navController, viewModel) }
             composable("cocktail_detail/{id}") { backStackEntry -> 
                 val id = backStackEntry.arguments?.getString("id") ?: ""
                 CocktailDetailScreen(navController, viewModel, id)
             }
-            composable("edit_profile") { EditProfileScreen(navController, viewModel) }
+            composable("edit_profile") { EditProfileScreen(navController, viewModel, snackbarHostState) }
         }
     }
 }
@@ -65,7 +78,7 @@ fun CaissonApp(viewModel: CocktailViewModel) {
 fun FloatingBottomBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Leaderboard,
+        BottomNavItem.BacCalculator,
         BottomNavItem.QuickAdd,
         BottomNavItem.Profile
     )
